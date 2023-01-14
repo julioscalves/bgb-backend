@@ -1,7 +1,6 @@
 import os
 import re
 import requests
-import utils
 
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -10,27 +9,15 @@ from flask.globals import request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
+from src.config import app
+from src.schema.schema import db
 
 load_dotenv()
 
-DB_PATH = f"{os.environ.get('DB_FOLDER')}/{os.environ.get('DB_FILENAME')}"
+DB_PATH = f"db/{os.environ.get('DB_FILENAME')}"
+DEBUG_MODE = os.environ.get('DEBUG', True)
 
-app = Flask(__name__)
 CORS(app)
 
-app.config['CORS_HEADERS'] = 'Content-Type'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-if not os.path.exists(DB_PATH):
-    db.create_all()
-
-from src.schema.schemas import Ad, User
-
-
-@app.route('/get_ad', methods=['GET, POST'])
-def get_ad():
-    if request.is_json:
-        pass
+if __name__ == '__main__':
+    app.run(debug=DEBUG_MODE)

@@ -1,4 +1,11 @@
-from src.app import db
+import os
+
+from flask_sqlalchemy import SQLAlchemy
+
+from src.config import app, DB_PATH
+
+
+db = SQLAlchemy(app)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -20,3 +27,10 @@ class Ad(db.Model):
 
     def __repr__(self):
         return f'[{self.id}]'
+
+
+if not os.path.exists(DB_PATH):
+    with app.app_context():
+        db.create_all()
+
+db.init_app(app)
