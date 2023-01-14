@@ -1,3 +1,12 @@
+import difflib
+import hashlib
+import hashtag
+import hmac
+import json
+import random
+import re
+import string
+
 from datetime import datetime
 from flask_restful import Resource
 
@@ -6,6 +15,18 @@ from src.resources.utils.messages import assemble_message
 
 
 class Authentication(Resource):
+
+    @staticmethod
+    def get_authentication_data_string(data):
+        data_check_list = []
+
+        for key in sorted(data.keys()):
+            if data[key] is not None:
+                data_check_list.append(key + '=' + str(data[key]))
+
+        data_check = '\n'.join(data_check_list)
+
+        return data_check
 
     @staticmethod
     def repack_auth_data(data):
@@ -21,7 +42,7 @@ class Authentication(Resource):
 
         return repacked_data
 
-    def post(self, data):
+    def post(self, data, token):
         authentication_data = self.repack_auth_data(data)
 
         if authentication_data['id'] is None:
@@ -44,3 +65,40 @@ class Authentication(Resource):
 
             if user.is_banned:
                 return assemble_message(key='banned')
+
+        token_expiration_time = 86_400
+
+        authentication_hash = authentication_data['hash']
+        authentication_data.pop('hash', None)
+
+        authentication_data_string = get_authentication_data_string(
+            authentication_data)
+
+        token_secret_key = hashlib.sha256(token.encode()).digest()
+        hmac_hash = hmac.new(token_secret_key,
+                             msg=authentication_data_string.encode(),
+                             digestmod=hashlib.sha256).hexdigest()
+
+        authentication_timestamp = datetime.fromtimestamp(
+            int(authentication_data['auth_date']))
+        now = datetime.now()
+
+        authentication_timedelta = now - authentication_timestamp
+
+        if hmac_hash != authentication_hash:
+            return assemble_message(key='invalid_hash')
+
+        elif authentication_timedelta.seconds > token_expiration_time:
+            return assemble_message(key='expired_token')
+
+        response = assemble_message(key='success')
+
+        response['id'] = int(authentication_data['id'])
+        response['username'] = authentication_data['username']
+        response['first_name'] = authentication_data['first_name']
+        response['last_name'] = authentication_data['last_name']
+        response['hash'] = authentication_hash
+        response['auth_date'] = authentication_data['auth_date']
+        response['photo_url'] = authentication_data['photo_url']
+
+        return response
