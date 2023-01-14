@@ -36,6 +36,16 @@ def assemble_message(key: str, message='', replace=False):
             'message':
             'Por favor, crie um nome de usuário junto ao Telegram antes de utilizar este site.'
         },
+        'hash_failure': {
+            'success':
+            False,
+            'message':
+            'Falha na geração do token de autenticação. Por favor, faça o login novamente.'
+        },
+        'expired_token': {
+            'success': False,
+            'message': 'Token expirado. Por favor, faça o login novamente.'
+        },
         'success': {
             'success': True,
             'message': ''
