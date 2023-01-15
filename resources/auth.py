@@ -1,6 +1,5 @@
 import difflib
 import hashlib
-import hashtag
 import hmac
 import json
 import random
@@ -15,9 +14,20 @@ from src.resources.utils.messages import assemble_message
 
 
 class Authentication(Resource):
+    """
+        Handles authentication processes.
+    """
 
     @staticmethod
-    def get_authentication_data_string(data):
+    def get_authentication_data_string(data: dict) -> str:
+        """Concatenates the authentication data into a string.
+
+        Args:
+            data (dict): authentication data
+
+        Returns:
+            str: authentication data string
+        """
         data_check_list = []
 
         for key in sorted(data.keys()):
@@ -29,7 +39,15 @@ class Authentication(Resource):
         return data_check
 
     @staticmethod
-    def repack_auth_data(data):
+    def repack_auth_data(data: dict) -> dict:
+        """Repacks the authentication data.
+
+        Args:
+            data (dict): authentication data
+
+        Returns:
+            dict: repacked data
+        """
         repacked_data = {
             'id': data.get('id', None),
             'first_name': data.get('first_name', None),
@@ -42,9 +60,8 @@ class Authentication(Resource):
 
         return repacked_data
 
-    def post(self, data, token):
-        authentication_data = self.repack_auth_data(data)
-
+    @staticmethod
+    def authenticate(authentication_data: dict, token: str) -> dict:
         if authentication_data['id'] is None:
             return assemble_message(key='invalid_id')
 
@@ -100,5 +117,28 @@ class Authentication(Resource):
         response['hash'] = authentication_hash
         response['auth_date'] = authentication_data['auth_date']
         response['photo_url'] = authentication_data['photo_url']
+
+        return response
+
+    @staticmethod
+    def is_request_authentic(data: dict, token: str, trusted_users: list) -> bool:
+        user = data.json.get('user', None)
+
+        if user in trusted_users:
+            authentication_data = data.json.copy()
+            remove_keys = ['target_user', 'is_admin', 'status']
+
+            for key in remove_keys:
+                authentication_data.pop(key, None)
+
+            authentication = authenticate(authentication_data, token)
+
+            return authentication['status'] = 'success'
+
+        return False
+
+    def post(self, data: dict, token: str) -> dict:
+        authentication_data = self.repack_auth_data(data)
+        response = authenticate(authentication_data)
 
         return response

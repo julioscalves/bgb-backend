@@ -1,0 +1,16 @@
+POST http://127.0.0.1:5000/submit HTTP/1.1
+content-type: application/json
+
+{
+  "city":"Recife",
+  "state":"PE",
+  "general_description":"TESTE",
+  "ending_date":"",
+  "boardgames":[
+    
+  ],
+  "auctions":[
+    
+  ]
+}
+

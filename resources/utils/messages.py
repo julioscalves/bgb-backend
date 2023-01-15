@@ -1,4 +1,5 @@
 def assemble_message(key: str, message='', replace=False):
+
     messages = {
         'not_json': {
             'success': False,
@@ -36,7 +37,7 @@ def assemble_message(key: str, message='', replace=False):
             'message':
             'Por favor, crie um nome de usuário junto ao Telegram antes de utilizar este site.'
         },
-        'hash_failure': {
+        'invalid_hash': {
             'success':
             False,
             'message':
