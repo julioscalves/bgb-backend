@@ -6,7 +6,6 @@ from flask_restful import Api
 
 from src.config import app
 from src.resources.ad import CreateAd, GetAd
-from src.schema.schema import db
 
 load_dotenv()
 
