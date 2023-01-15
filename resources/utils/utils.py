@@ -35,3 +35,9 @@ def unpack_json(data: dict) -> None:
         print(f'{key}: {data[key]}')
 
     print('*' * 25)
+
+
+def format_index(index: int) -> str:
+    index = str(index) if index > 9 else f'0{index}'
+
+    return index
