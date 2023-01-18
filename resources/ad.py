@@ -62,8 +62,8 @@ class CreateAd(Resource):
                         message += f' R$ {item["price"]}'
 
                     if len(item['description']) > 0:
-                        new_line = '\n'
-                        message += f'{new_line}       {item["description"].replace(new_line, ". ")}'
+                        new_line = '\n       '
+                        message += f'{new_line}{item["description"].replace(new_line, ". ")}'
 
                 message += '\n'
 
