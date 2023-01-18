@@ -1,3 +1,5 @@
+import difflib
+import json
 import string
 import random
 
@@ -89,3 +91,18 @@ def remove_duplicates(items: list) -> list:
     items.sort()
 
     return items
+
+
+def calculate_similarity(a: str, b: str) -> float:
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def is_the_same_message(message: str):
+    for ad in Ad.query.order_by(Ad.id).all():
+        similarity = calculate_similarity(json.dumps(message),
+                                          json.dumps(ad.content))
+
+        if similarity == 1:
+            return ad.id
+
+    return None
