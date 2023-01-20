@@ -7,6 +7,7 @@ import re
 import string
 
 from datetime import datetime
+from flask import jsonify
 from flask_restful import Resource
 
 from src.schema.schema import User
@@ -15,7 +16,7 @@ from src.resources.utils.messages import assemble_message
 
 class Authentication(Resource):
     """
-        Handles authentication processes.
+        Handles the authentication process.
     """
 
     @staticmethod
@@ -139,6 +140,6 @@ class Authentication(Resource):
 
     def post(self, data: dict, token: str) -> dict:
         authentication_data = self.repack_auth_data(data)
-        response = authenticate(authentication_data)
+        response = authenticate(authentication_data, token)
 
         return response
