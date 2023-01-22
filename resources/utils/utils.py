@@ -4,7 +4,7 @@ import string
 import random
 import requests
 
-from src.config import DEFAULT_MESSAGE_PARAMS
+from src.config import DEFAULT_MESSAGE_PARAMS, EDIT_MESSAGE_URL, SUBMIT_MESSAGE_URL
 from src.schema.schema import Ad
 
 
@@ -110,6 +110,9 @@ def is_the_same_message(message: str):
     return None
 
 
-def send_message(data: dict) -> dict:
+def post_message(data: dict, method: str) -> None:
+    urls = {'submit': SUBMIT_MESSAGE_URL, 'edit': EDIT_MESSAGE_URL}
     payload = {**DEFAULT_MESSAGE_PARAMS, **data}
-    response = requests.post()
+    response = requests.post(urls[method], data=payload)
+
+    return unpack_json(response)

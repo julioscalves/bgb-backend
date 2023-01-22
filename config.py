@@ -6,7 +6,9 @@ from flask import Flask
 
 load_dotenv()
 
-BOT_NAME = os.environ.get('BOT_NAME')
+BGB_BAZAR_CHANNEL_ID = os.environ.get('BGB_BAZAR_CHANNEL_ID', None)
+BGB_BAZAR_COMMENTS_ID = os.environ.get('BGB_BAZAR_COMMENTS_ID', None)
+BOT_NAME = os.environ.get('BOT_NAME', None)
 DB_PATH = f"{os.environ.get('DB_FOLDER')}/{os.environ.get('DB_FILENAME')}.db"
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', None)
 TIMEBLOCK = os.environ.get('TIMEBLOCK', 1)
