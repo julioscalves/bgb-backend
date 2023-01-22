@@ -66,6 +66,7 @@ def unpack_massage_data(key: str, data: dict) -> list:
 def fix_target(text: str) -> str:
     if '#' not in text:
         return '#' + text + ' '
+
     return text
 
 

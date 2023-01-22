@@ -16,21 +16,6 @@ class CreateAd(Resource):
     """
 
     @staticmethod
-    def can_user_send_message(user: str) -> bool:
-        """
-            Checks if the user is allowed to send a message.
-
-        Args:
-            user (str): user id
-
-        Returns:
-            bool: allowed or not.
-        """
-        user_query = User.query.filter_by(id=user).first()
-        return True if user_query is None else user_query.blocked_until > datetime.now(
-        )
-
-    @staticmethod
     def register_user(userid: str, username: str, blocked_until: int) -> None:
         """
         If the user is not registered, a new user should
@@ -46,6 +31,21 @@ class CreateAd(Resource):
                         is_banned=False,
                         blocked_until=blocked_until)
         db.session.add(new_user)
+
+    @staticmethod
+    def can_user_send_message(user: str) -> bool:
+        """
+            Checks if the user is allowed to send a message.
+
+        Args:
+            user (str): user id
+
+        Returns:
+            bool: allowed or not.
+        """
+        user_query = User.query.filter_by(id=user).first()
+        return True if user_query is None else user_query.blocked_until > datetime.now(
+        )
 
     @staticmethod
     def group_by_type(data: dict) -> str:
@@ -95,7 +95,10 @@ class CreateAd(Resource):
         return message
 
     def post(self):
-        print(request.json)
+        userid = request.json.get('id')
+
+        if can_user_send_message(userid):
+            pass
 
 
 class GetAd(Resource):
