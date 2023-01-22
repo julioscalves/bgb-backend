@@ -2,7 +2,9 @@ import difflib
 import json
 import string
 import random
+import requests
 
+from src.config import DEFAULT_MESSAGE_PARAMS
 from src.schema.schema import Ad
 
 
@@ -106,3 +108,8 @@ def is_the_same_message(message: str):
             return ad.id
 
     return None
+
+
+def send_message(data: dict) -> dict:
+    payload = {**DEFAULT_MESSAGE_PARAMS, **data}
+    response = requests.post()

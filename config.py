@@ -1,3 +1,4 @@
+import json
 import os
 
 from dotenv import load_dotenv
@@ -5,8 +6,22 @@ from flask import Flask
 
 load_dotenv()
 
-TIMEBLOCK = os.environ.get('TIMEBLOCK')
+BOT_NAME = os.environ.get('BOT_NAME')
 DB_PATH = f"{os.environ.get('DB_FOLDER')}/{os.environ.get('DB_FILENAME')}.db"
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', None)
+TIMEBLOCK = os.environ.get('TIMEBLOCK', 1)
+
+DEFAULT_MESSAGE_PARAMS = {
+    'disable_web_page_preview': True,
+    'parse_mode': 'HTML',
+}
+TRUSTED_USERS = {
+    int(key): str(value)
+    for key, value in json.loads(os.environ.get('TRUSTED_USERS', {})).items()
+}
+
+EDIT_MESSAGE_URL = f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText'
+SUBMIT_MESSAGE_URL = f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage'
 
 app = Flask(__name__)
 

@@ -1,4 +1,5 @@
 import os
+import json
 
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -10,6 +11,7 @@ from src.resources.ad import CreateAd, GetAd
 load_dotenv()
 
 DEBUG_MODE = os.environ.get('DEBUG', True)
+TRUSTED_USERS = {key, value for key, value in json.loads(os.environ.get('TRUSTED_USERS', {})}
 
 CORS(app)
 

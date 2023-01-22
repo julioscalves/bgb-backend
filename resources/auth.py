@@ -1,10 +1,5 @@
-import difflib
 import hashlib
 import hmac
-import json
-import random
-import re
-import string
 
 from datetime import datetime
 from flask import jsonify
@@ -122,7 +117,8 @@ class Authentication(Resource):
         return response
 
     @staticmethod
-    def is_request_authentic(data: dict, token: str, trusted_users: list) -> bool:
+    def is_request_authentic(data: dict, token: str,
+                             trusted_users: list) -> bool:
         user = data.json.get('user', None)
 
         if user in trusted_users:
@@ -134,7 +130,7 @@ class Authentication(Resource):
 
             authentication = authenticate(authentication_data, token)
 
-            return authentication['status'] = 'success'
+            return authentication['status'] == 'success'
 
         return False
 
@@ -142,4 +138,4 @@ class Authentication(Resource):
         authentication_data = self.repack_auth_data(data)
         response = authenticate(authentication_data, token)
 
-        return response
+        return jsonify(response)
