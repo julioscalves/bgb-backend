@@ -1,37 +1,70 @@
 import re
 
+SPECIAL_CHARACTERS = [
+    '?',
+    '"',
+    "'",
+    '!',
+    '¡',
+    ',',
+    'ª',
+    '.',
+    '‘',
+    '¿',
+    '{',
+    '[',
+    '}',
+    ']',
+    '_',
+    '#',
+    '½',
+    '+',
+    '*',
+    '%',
+    'º',
+    '°',
+    ')',
+    'ª',
+    'Miniatures Game',
+]
+
+SERIES = [
+    'Pandemic', 'Dungeons & Dragons', 'Zombicide', 'Zpocalypse', 'Zooloretto',
+    'Wings of Glory', 'World of Darkness', 'Black Plague', 'Green Horde',
+    'Zombie Dice', 'The Boardgame', 'Zombie Fluxx', 'DC Comics', 'Marvel',
+    'GURPS', 'Star Wars', 'O Senhor dos Anéis', 'A Guerra dos Tronos',
+    'Guerra dos Tronos', 'Tiny Epic', 'Invader', 'Dark Side', 'Bang',
+    'Encantados', 'Exploding Kittens', 'Ticket to Ride', 'Clank', '7 Wonders',
+    'Fronteira do Império', 'Lenda dos Cinco Anéis', 'Viticulture',
+    'El Grande', 'Pathfinder', 'Tormenta', 'T.I.M.E.',
+    'Advanced Dungeons & Dragons', 'Achtung', 'Kick-Ass', 'CO2'
+    'Dungeon World', 'Chamado de Cthulhu', 'Tiny Dungeon', 'Ubongo',
+    'Warhammer 40k', 'Carcassonne', 'Alhambra', 'Alien vs Predator',
+    'Card Kingdoms', 'The Lord of the Rings', 'Core Rulebook',
+    'Bounty Hunters', 'Warhammer', 'Triumph of Chaos', 'Pokémon', 'Digimon',
+    'Torg Eternity', 'Munchkin', 'The Witcher', 'Viticulture: Tuscany',
+    'The Witcher: Old World', 'Star Wars: Destiny', 'Anachrony', 'Patchwork',
+    'BANG', 'X-Wing', 'Y-Wing', 'A Máscara', 'Harry Potter', 'Dwar7s',
+    'Marco Polo', 'Glen More', 'Disney', 'Banco Imobiliário', 'Hanabi',
+    'Código Secreto', 'Codenames', 'Pixel Tactics', 'Adventure Time',
+    'Men of Iron', 'Deckscape', 'Kingdomino', 'Queendomino', 'Starcraft',
+    'Mass Effect', 'Splendor', 'Monopoly', 'Arkham Horror', 'Scotland Yard',
+    'Imagem & Ação', 'Resident Evil', 'DC', 'Concordia', 'Zurvivors'
+    'Codinomes', 'Código secreto', 'Black Stories', 'Expansion', 'Cartógrafos',
+    'Cartographers', 'Power Grid', 'Tokaido'
+]
+
+EXCEPTIONS = {
+    '#AMarvel #DeckBuildingGame': '#AMarvelDeckBuildingGame #Marvel',
+    '#ManoplaDoInfinito #UmJogoLoveLetter':
+    '#ManoplaDoInfinito Um Jogo #LoveLetter',
+    '#Mission #RedPlanet': '#MissionRedPlanet',
+}
+
 
 def remove_special_chars(string):
-    targets = [
-        '?',
-        '"',
-        "'",
-        '!',
-        '¡',
-        ',',
-        'ª',
-        '.',
-        '‘',
-        '¿',
-        '{',
-        '[',
-        '}',
-        ']',
-        '_',
-        '#',
-        '½',
-        '+',
-        '*',
-        '%',
-        'º',
-        '°',
-        ')',
-        'ª',
-        'Miniatures Game',
-    ]
-
-    for target in targets:
-        string = string.replace(target, '')
+    for char in SPECIAL_CHARACTERS:
+        string = string.replace(char, '')
 
     return string
 
@@ -40,9 +73,8 @@ def merge_hyphens(string):
     index = string.find('-')
 
     try:
-        if index > 0:
-            if string[index - 1] != ' ' and string[index + 1] != ' ':
-                string = string.replace('-', '')
+        if index > 0 and string[index - 1] != ' ' and string[index + 1] != ' ':
+            string = string.replace('-', '')
 
     except IndexError:
         pass
@@ -80,39 +112,10 @@ def replace_special_chars(string):
 
 
 def manage_series(string):
-    series = {
-        'Pandemic', 'Dungeons & Dragons', 'Zombicide', 'Zpocalypse',
-        'Zooloretto', 'Wings of Glory', 'World of Darkness', 'Black Plague',
-        'Green Horde', 'Zombie Dice', 'The Boardgame', 'Zombie Fluxx',
-        'DC Comics', 'Marvel', 'GURPS', 'Star Wars', 'O Senhor dos Anéis',
-        'A Guerra dos Tronos', 'Guerra dos Tronos', 'Tiny Epic', 'Invader',
-        'Dark Side', 'Bang', 'Encantados', 'Exploding Kittens',
-        'Ticket to Ride', 'Clank', '7 Wonders', 'Fronteira do Império',
-        'Lenda dos Cinco Anéis', 'Viticulture', 'El Grande', 'Pathfinder',
-        'Tormenta', 'T.I.M.E.', 'Advanced Dungeons & Dragons', 'Achtung',
-        'Kick-Ass', 'CO2'
-        'Dungeon World', 'Chamado de Cthulhu', 'Tiny Dungeon', 'Ubongo',
-        'Warhammer 40k', 'Carcassonne', 'Alhambra', 'Alien vs Predator',
-        'Card Kingdoms', 'The Lord of the Rings', 'Core Rulebook',
-        'Bounty Hunters', 'Warhammer', 'Triumph of Chaos', 'Pokémon',
-        'Digimon', 'Torg Eternity', 'Munchkin', 'The Witcher',
-        'Viticulture: Tuscany', 'The Witcher: Old World', 'Star Wars: Destiny',
-        'Anachrony', 'Patchwork', 'BANG', 'X-Wing', 'Y-Wing', 'A Máscara',
-        'Harry Potter', 'Dwar7s', 'Marco Polo', 'Glen More', 'Disney',
-        'Banco Imobiliário', 'Hanabi', 'Código Secreto', 'Codenames',
-        'Pixel Tactics', 'Adventure Time', 'Men of Iron', 'Deckscape',
-        'Kingdomino', 'Queendomino', 'Starcraft', 'Mass Effect', 'Splendor',
-        'Monopoly', 'Arkham Horror', 'Scotland Yard', 'Imagem & Ação',
-        'Resident Evil', 'DC', 'Concordia', 'Zurvivors'
-        'Codinomes', 'Código secreto', 'Black Stories', 'Expansion',
-        'Cartógrafos', 'Cartographers', 'Power Grid', 'Tokaido'
-    }
+    for serie in SERIES:
+        match = re.search(f'{serie}[\s][^:]', string)
 
-    for serie in series:
-        match = re.match(f'{serie}[\s][^:]', string)
-        search = re.search(f'{serie}[\s][^:]', string)
-
-        if match or search:
+        if match:
             string = string.replace(serie, f'{serie}: ')
 
     return string
@@ -126,9 +129,7 @@ def split_into_tags(string):
     for marker in markers:
         string = string.replace(marker, ' #')
 
-    string = '#' + string
-
-    return string
+    return f'#{string}'
 
 
 def remove_numeric_tags(string):
@@ -164,16 +165,9 @@ def push_roman_numbers(string):
 
 
 def map_exceptions(string):
-    mapping = {
-        '#AMarvel #DeckBuildingGame': '#AMarvelDeckBuildingGame #Marvel',
-        '#ManoplaDoInfinito #UmJogoLoveLetter':
-        '#ManoplaDoInfinito Um Jogo #LoveLetter',
-        '#Mission #RedPlanet': '#MissionRedPlanet',
-    }
-
-    for key in mapping.keys():
+    for key, value in EXCEPTIONS.items():
         if key in string:
-            string = string.replace(key, mapping[key])
+            string = string.replace(key, value)
 
     return string
 
