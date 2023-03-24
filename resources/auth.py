@@ -14,8 +14,7 @@ class Authentication(Resource):
         Handles the authentication process.
     """
 
-    @staticmethod
-    def get_authentication_data_string(data: dict) -> str:
+    def get_auth_data_string(self, data: dict) -> str:
         """Concatenates the authentication data into a string.
 
         Args:
@@ -56,15 +55,12 @@ class Authentication(Resource):
 
         return repacked_data
 
-    @staticmethod
-    def authenticate(authentication_data: dict, token: str) -> dict:
-        if authentication_data['id'] is None:
-            return assemble_message(key='invalid_id')
+    def authenticate(self, auth_data: dict, token: str) -> dict:
+        for key in ['id', 'username']:
+            if auth_data.get(key) is None:
+                return assemble_message(key=f'invalid_{key}')
 
-        elif authentication_data['username'] is None:
-            return assemble_message(key='invalid_username')
-
-        user = User.query.filter_by(id=authentication_data['id']).first()
+        user = User.query.filter_by(id=auth_data['id']).first()
 
         if user:
             block = user.blocked_until
@@ -81,11 +77,10 @@ class Authentication(Resource):
 
         token_expiration_time = 86_400
 
-        authentication_hash = authentication_data['hash']
-        authentication_data.pop('hash', None)
+        authentication_hash = auth_data['hash']
+        auth_data.pop('hash', None)
 
-        authentication_data_string = get_authentication_data_string(
-            authentication_data)
+        authentication_data_string = self.get_auth_data_string(auth_data)
 
         token_secret_key = hashlib.sha256(token.encode()).digest()
         hmac_hash = hmac.new(token_secret_key,
@@ -93,7 +88,7 @@ class Authentication(Resource):
                              digestmod=hashlib.sha256).hexdigest()
 
         authentication_timestamp = datetime.fromtimestamp(
-            int(authentication_data['auth_date']))
+            int(auth_data['auth_date']))
         now = datetime.now()
 
         authentication_timedelta = now - authentication_timestamp
@@ -106,36 +101,35 @@ class Authentication(Resource):
 
         response = assemble_message(key='success')
 
-        response['id'] = int(authentication_data['id'])
-        response['username'] = authentication_data['username']
-        response['first_name'] = authentication_data['first_name']
-        response['last_name'] = authentication_data['last_name']
+        response['id'] = int(auth_data['id'])
+        response['username'] = auth_data['username']
+        response['first_name'] = auth_data['first_name']
+        response['last_name'] = auth_data['last_name']
         response['hash'] = authentication_hash
-        response['auth_date'] = authentication_data['auth_date']
-        response['photo_url'] = authentication_data['photo_url']
+        response['auth_date'] = auth_data['auth_date']
+        response['photo_url'] = auth_data['photo_url']
 
         return response
 
-    @staticmethod
-    def is_request_authentic(data: dict, token: str,
+    def is_request_authentic(self, data: dict, token: str,
                              trusted_users: list) -> bool:
         user = data.json.get('user', None)
 
         if user in trusted_users:
-            authentication_data = data.json.copy()
+            auth_data = data.json.copy()
             remove_keys = ['target_user', 'is_admin', 'status']
 
             for key in remove_keys:
-                authentication_data.pop(key, None)
+                auth_data.pop(key, None)
 
-            authentication = authenticate(authentication_data, token)
+            authentication = self.authenticate(auth_data, token)
 
             return authentication['status'] == 'success'
 
         return False
 
     def post(self, data: dict, token: str) -> dict:
-        authentication_data = self.repack_auth_data(data)
-        response = authenticate(authentication_data, token)
+        auth_data = self.repack_auth_data(data)
+        response = self.authenticate(auth_data, token)
 
         return jsonify(response)

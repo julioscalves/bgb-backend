@@ -44,60 +44,54 @@ class CreateAd(Resource):
             bool: allowed or not.
         """
         user_query = User.query.filter_by(id=user).first()
+
         return True if user_query is None else user_query.blocked_until > datetime.now(
         )
 
     @staticmethod
-    def group_by_type(data: dict) -> str:
-        groups = {
-            0: [],  #only sell
-            1: [],  #sell or tarde
-            2: [],  #only trade
-            3: [],  #auction
-            4: [],  #looking for
-        }
-        message = ''
+def group_by_type(data: dict) -> str:
+    groups = {i: [] for i in range(5)}  # simplified dictionary initialization
+    message = ''
 
-        for item in data:
-            item_type = item['type']
-            groups[item_type].append(item)
+    for item in data:
+        groups[item['type']].append(item)
 
-        group_map = {
-            0: '💵 #VENDO',
-            1: '⚖️ #VENDO OU #TROCO',
-            2: '🤝 #TROCO',
-            3: '🔨 #LEILÃO',
-            4: '🔎 #PROCURO'
-        }
+    group_map = {
+        0: '💵 #VENDO',
+        1: '⚖️ #VENDO OU #TROCO',
+        2: '🤝 #TROCO',
+        3: '🔨 #LEILÃO',
+        4: '🔎 #PROCURO'
+    }
 
-        index = 1
-
-        for group in groups.keys():
-            if len(groups[group]) > 0:
-                item_list = groups[group]
-                message += f'{group_map[group]}\n\n'
-
-                for item in item_list:
-                    tag = generate_tag(item['name'])
-                    message += f'\t\t➤ #{format_index(index)} {tag}'
-
-                    if item['type'] <= 1:
-                        message += f' R$ {item["price"]}'
-
-                    if len(item['description']) > 0:
-                        new_line = '\n       '
-                        message += f'{new_line}{item["description"].replace(new_line, ". ")}'
-
-                message += '\n'
-
+    for group in groups:
+        item_list = groups[group]
+        
+        if not item_list:  # use boolean evaluation to check if list is empty
+            continue
+        
+        message += f'{group_map[group]}\n\n'
+        
+        for index, item in enumerate(item_list, start=1):
+            tag = generate_tag(item['name'])
+            message += f'\t\t➤ #{index} {tag}'
+            
+            if item['type'] <= 1:
+                message += f' R$ {item["price"]}'
+            
+            if item['description']:
+                description = item['description'].replace("\n", ". ")
+                message += f'\n       {description}'
+            
             message += '\n'
+        
+        message += '\n'
 
-        return message
-
+    return message
     def post(self):
         userid = request.json.get('id')
 
-        if can_user_send_message(userid):
+        if self.can_user_send_message(userid):
             pass
 
 
